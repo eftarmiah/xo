@@ -1,60 +1,70 @@
-var noughtsAndCrosses = angular.module("NoughtsAndCrosses",[]);
+var noughtsAndCrosses = angular.module("NoughtsAndCrosses",["firebase"]);
 
-noughtsAndCrosses.controller("MainController", ["$scope", function($scope) {
+noughtsAndCrosses.controller("MainController", ["$scope","$firebase", function($scope, $firebase) {
 
-    $scope.winningMoves = [];
-    $scope.winningMoves[0] = [1,2,3];
-    $scope.winningMoves[1] = [4,5,6];
-    $scope.winningMoves[2] = [7,8,9];
-    $scope.winningMoves[3] = [1,4,7];
-    $scope.winningMoves[4] = [2,5,8];
-    $scope.winningMoves[5] = [3,6,9];
-    $scope.winningMoves[6] = [1,5,9];
-    $scope.winningMoves[7] = [3,5,7];
+    var ref = new Firebase("https://boiling-fire-5393.firebaseio.com/game/xos");
+    var sync = $firebase(ref);
+    $scope.games = sync.$asArray();
 
-    //resets value on a board
-    $scope.newGame = function () {
-        $scope.board = [];
-        $scope.board[1] = "";
-        $scope.board[2] = "";
-        $scope.board[3] = "";
-        $scope.board[4] = "";
-        $scope.board[5] = "";
-        $scope.board[6] = "";
-        $scope.board[7] = "";
-        $scope.board[8] = "";
-        $scope.board[9] = "";
+    $scope.winningMoves = [
+        [1,2,3],
+        [4,5,6],
+        [7,8,9],
+        [1,4,7],
+        [2,5,8],
+        [3,6,9],
+        [1,5,9],
+        [3,5,7]
+    ];
 
-        $scope.turn = "x";
-        $scope.winner = null;
-        $scope.moves = 0; //number of moves made
+    $scope.newGame = function() {
+        var data = {
+            board:{
+                "1":"",
+                "2":"",
+                "3":"",
+                "4":"",
+                "5":"",
+                "6":"",
+                "7":"",
+                "8":"",
+                "9":""
+            },
+            turn:"x",
+            moves:0,
+            winner:""
+        };
+        $scope.games.$add(data).then(function (ref) {
+            $scope.game = $scope.games.$getRecord(ref.key())
+        });
     };
 
     $scope.play = function(position){
-        console.log(position);
 
         //check if the position has already been played
-        if($scope.board[position] !== "") {
+        if($scope.game.board[position] !== "") {
             return;
         }
 
         //exit if someone has won
-        if($scope.winner !== null) {
+        if($scope.game.winner !== "") {
             return;
         }
 
-        $scope.board[position] = $scope.turn;
+        $scope.game.board[position] = $scope.game.turn;
+
         if ($scope.checkForWinner()) {
-            $scope.winner = $scope.turn;
-            $scope.message = $scope.turn + " Wins!";
+            $scope.game.winner = $scope.game.turn;
+            $scope.message = $scope.game.turn + " Wins!";
         } else {
             //next turn
-            $scope.turn = $scope.turn == "x" ? "o":"x";
-            $scope.moves++;
-            $scope.message = $scope.turn +"'s move"
+            $scope.game.turn = $scope.game.turn == "x" ? "o":"x";
+            $scope.game.moves++;
+            $scope.message = $scope.game.turn +"'s move"
         }
+        $scope.games.$save($scope.game);
 
-        if ($scope.moves >= 9) {
+        if ($scope.game.moves >= 9) {
             $scope.message = "Game is a draw!";
         }
 
@@ -63,9 +73,9 @@ noughtsAndCrosses.controller("MainController", ["$scope", function($scope) {
     $scope.checkForWinner = function() {
         for (var n=0;n<$scope.winningMoves.length;n++) {
             var winningMove = $scope.winningMoves[n];
-            var p1 = $scope.board[winningMove[0]];
-            var p2 = $scope.board[winningMove[1]];
-            var p3 = $scope.board[winningMove[2]];
+            var p1 = $scope.game.board[winningMove[0]];
+            var p2 = $scope.game.board[winningMove[1]];
+            var p3 = $scope.game.board[winningMove[2]];
             if (p1 === p2 && p2 === p3 && p1 !== "") {
                 return true;
             }
