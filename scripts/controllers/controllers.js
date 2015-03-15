@@ -1,41 +1,20 @@
-var noughtsAndCrosses = angular.module("NoughtsAndCrosses",["firebase"]);
+'use strict';
+var xoApp = angular.module("xo",["ngRoute","xo.services"]);
 
-noughtsAndCrosses.controller("MainController", ["$scope","$firebase", function($scope, $firebase) {
+xoApp.config(function($routeProvider) {
+    $routeProvider
+        .when("/", {
+            templateUrl: "/views/game.html",
+            controller: "GameController"
+        })
 
-    var ref = new Firebase("https://boiling-fire-5393.firebaseio.com/game/xos");
-    var sync = $firebase(ref);
-    $scope.games = sync.$asArray();
+});
 
-    $scope.winningMoves = [
-        [1,2,3],
-        [4,5,6],
-        [7,8,9],
-        [1,4,7],
-        [2,5,8],
-        [3,6,9],
-        [1,5,9],
-        [3,5,7]
-    ];
+xoApp.controller("GameController", ["$scope", "gameService", function($scope, gameService) {
 
-    $scope.newGame = function() {
-        var data = {
-            board:{
-                "1":"",
-                "2":"",
-                "3":"",
-                "4":"",
-                "5":"",
-                "6":"",
-                "7":"",
-                "8":"",
-                "9":""
-            },
-            turn:"x",
-            moves:0,
-            winner:""
-        };
-        $scope.games.$add(data).then(function (ref) {
-            $scope.game = $scope.games.$getRecord(ref.key())
+    $scope.newGame = function () {
+        gameService.newGame(function(game){
+            $scope.game = game;
         });
     };
 
@@ -53,7 +32,7 @@ noughtsAndCrosses.controller("MainController", ["$scope","$firebase", function($
 
         $scope.game.board[position] = $scope.game.turn;
 
-        if ($scope.checkForWinner()) {
+        if (gameService.checkForWinner($scope.game.board).won) {
             $scope.game.winner = $scope.game.turn;
             $scope.message = $scope.game.turn + " Wins!";
         } else {
@@ -62,25 +41,12 @@ noughtsAndCrosses.controller("MainController", ["$scope","$firebase", function($
             $scope.game.moves++;
             $scope.message = $scope.game.turn +"'s move"
         }
-        $scope.games.$save($scope.game);
-
         if ($scope.game.moves >= 9) {
             $scope.message = "Game is a draw!";
+            $scope.game.winner = "none";
         }
+        gameService.save($scope.game);
 
-    };
-
-    $scope.checkForWinner = function() {
-        for (var n=0;n<$scope.winningMoves.length;n++) {
-            var winningMove = $scope.winningMoves[n];
-            var p1 = $scope.game.board[winningMove[0]];
-            var p2 = $scope.game.board[winningMove[1]];
-            var p3 = $scope.game.board[winningMove[2]];
-            if (p1 === p2 && p2 === p3 && p1 !== "") {
-                return true;
-            }
-        }
-        return false;
     };
 
     //start new game
