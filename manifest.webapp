@@ -1,0 +1,29 @@
+{
+  "name": "XO",
+  "description": "xo is naughts and crosses game",
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "Eftar Miah",
+    "url": "https://github.com/eftarmiah"
+  },
+  "locales": {
+    "en": {
+      "name": "XO",
+      "description": "xo"
+    }
+  },
+  "default_locale": "en-US",
+  "icons": {
+
+    "128": "/style/icons/120px.png"
+  },
+    
+    "permissions": {
+    "desktop-notification":{}
+},
+    
+    
+  "version": "1"
+   
+
+}

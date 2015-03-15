@@ -46,7 +46,7 @@ noughtsAndCrosses.controller("MainController", ["$scope", function($scope) {
         $scope.board[position] = $scope.turn;
         if ($scope.checkForWinner()) {
             $scope.winner = $scope.turn;
-            $scope.message = $scope.turn + " Wins!";
+            new Notification($scope.turn + " Wins!");
         } else {
             //next turn
             $scope.turn = $scope.turn == "x" ? "o":"x";
