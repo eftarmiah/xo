@@ -1,6 +1,6 @@
 'use strict';
 
-var services = angular.module('xo.services',["firebase"]);
+var services = angular.module('xo.services.game',["firebase"]);
 
 services.factory("gameService", ["$firebase", function($firebase) {
     var winningMoves = [
@@ -35,6 +35,18 @@ services.factory("gameService", ["$firebase", function($firebase) {
                 won:false,
                 winner: null
             };
+        },
+
+        getFirebase:function(){
+            return ref;
+        },
+
+        get:function(id) {
+            return games.$getRecord(id);
+        },
+
+        findAll: function () {
+            return games;
         },
 
         newGame : function(fn) {
