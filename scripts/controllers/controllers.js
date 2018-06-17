@@ -31,33 +31,45 @@ noughtsAndCrosses.controller("MainController", ["$scope", function($scope) {
     };
 
     $scope.play = function(position){
-        console.log(position);
-
-        //check if the position has already been played
-        if($scope.board[position] !== "") {
+        if($scope.isGameComplete()) {
             return;
         }
 
-        //exit if someone has won
-        if($scope.winner !== null) {
+        if(!$scope.isPositionFree(position)) {
             return;
         }
 
-        $scope.board[position] = $scope.turn;
+        $scope.makeMove($scope.turn, position);
+
         if ($scope.checkForWinner()) {
             $scope.winner = $scope.turn;
             $scope.message = $scope.turn + " Wins!";
         } else {
-            //next turn
             $scope.turn = $scope.turn == "x" ? "o":"x";
-            $scope.moves++;
-            $scope.message = $scope.turn +"'s move"
+            if ($scope.isGameDraw()) {
+                $scope.message = "Game is a draw!";
+            } else {
+                $scope.message = $scope.turn +"'s move";
+            }
         }
 
-        if ($scope.moves >= 9) {
-            $scope.message = "Game is a draw!";
-        }
+    };
 
+    $scope.isPositionFree = function (position){
+        return $scope.board[position] === "";
+    };
+
+    $scope.isGameComplete = function () {
+        return $scope.winner !== null
+    };
+
+    $scope.makeMove = function(turn, position) {
+        $scope.board[position] = turn;
+        $scope.moves++;
+    };
+
+    $scope.isGameDraw = function () {
+        return $scope.moves >= 9;
     };
 
     $scope.checkForWinner = function() {
